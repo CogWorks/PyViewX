@@ -121,17 +121,18 @@ class Validator(object):
 				self.state = 1
 				self.client.cancelCalibration()
 				self.log = "TIMEOUT"
+				self.complete = True
+				self.lc.stop()
+				return
 		if self.gameover_fixcross_frames_count >= self.gameover_fixcross_frames:
 			self.gameover_fixation = True
 			self.state = 1
 			self.client.acceptCalibrationPoint()
 			self.log = "COMPLETE"
+			self.complete = True
+			self.lc.stop()
+			return
    
-
-	def check_hit(self, gaze):
-		((gaze[0]-self.center_x)**2 + (gaze[1]-self.center_y)**2) <= ((self.gameover_fixcross_size+self.gameover_fixcross_tolerance)**2
-  
-  
   
 	def _update(self):
 		self._hit()
@@ -141,7 +142,7 @@ class Validator(object):
 			if event.type == pygame.KEYDOWN:
 				if self.escape and event.key == pygame.K_ESCAPE:
 					if self.lc:
-					 self.log = "OVERRIDE"
+						self.log = "OVERRIDE"
 						self.lc.stop()
 						return
 # 				if self.state == 1:
@@ -156,6 +157,10 @@ class Validator(object):
 # 						self.complete = True
 # 						self.lc.stop()
 
+	def check_hit(self, gaze):
+		((gaze[0]-self.center_x)**2 + (gaze[1]-self.center_y)**2) <= ((self.gameover_fixcross_size+self.gameover_fixcross_tolerance)**2
+  
+  
 	def start(self, stopCallback, wait=1, randomize=1, auto=0, speed=1, level=3, points=9, *args, **kwargs):
 # 		self.client.setDataFormat('%TS %ET %SX %SY %DX %DY %EX %EY %EZ')
 		if self.exist == False:
