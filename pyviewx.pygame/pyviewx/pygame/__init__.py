@@ -19,3 +19,4 @@
 
 from calibrator import Calibrator
 from calibratorGL import CalibratorGL
+from validator import Validator
