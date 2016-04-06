@@ -9,7 +9,7 @@ class Validator(object):
 
 	d = Dispatcher()
 
-	def __init__(self, client, screen=None, escape=False, reactor=None, params=None eye=0):
+	def __init__(self, client, screen=None, escape=False, reactor=None, params=None, eye=0):
 		if reactor is None:
 			from twisted.internet import reactor
 		self._init_params(params)
