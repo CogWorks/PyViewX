@@ -72,6 +72,7 @@ class Validator(object):
 	 self.gameover_fixcross_frames_count = 0
 	 self.gameover_fixcross_frames_miss = 0
 		self.validationResults = []
+		self.log = "INCOMPLETE"
 		self.state = 0
 
 # 	def _draw_text(self, text, font, color, loc):
@@ -113,12 +114,18 @@ class Validator(object):
    self.gameover_fixcross_frames_count += 1
 	  self.gameover_fixcross_frames_miss = 0
 	 else
-	  self.gameover_fixcross_frames_count = 0
 	  self.gameover_fixcross_frames_miss += 1
+	 if self.gameover_fixcross_frames_miss >= self.gameover_fixcross_frames_tolerance:
+	  self.gameover_fixcross_frames_count = 0 
+	  if self.gameover_fixcross_frames_miss >= self.gameover_fixcross_timeout:
+	   self.state = 1
+		  self.client.cancelCalibration()
+		  self.log = "TIMEOUT"
 	 if self.gameover_fixcross_frames_count >= self.gameover_fixcross_frames:
 		 self.gameover_fixation = True
 		 self.state = 1
 		 self.client.acceptCalibrationPoint()
+		 self.log = "COMPLETE"
    
 
  def check_hit(self, gaze):
@@ -129,11 +136,12 @@ class Validator(object):
 	def _update(self):
 		self._hit()
 		self._display()
-
+  
 		for event in pygame.event.get():
 			if event.type == pygame.KEYDOWN:
 				if self.escape and event.key == pygame.K_ESCAPE:
 					if self.lc:
+					 self.log = "OVERRIDE"
 						self.lc.stop()
 						return
 # 				if self.state == 1:
@@ -158,7 +166,7 @@ class Validator(object):
 		dd = self.lc.start(1.0 / 30)
 		if not stopCallback:
 			stopCallback = self.stop
-		dd.addCallback(stopCallback, self.validationResults, *args, **kwargs)
+		dd.addCallback(stopCallback, self.log, self.validationResults, *args, **kwargs)
 
 	def stop(self, lc):
 		self.reactor.stop()
