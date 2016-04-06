@@ -31,30 +31,30 @@ class Validator(object):
 		self.complete = False
 		self.lc = None
 		self._reset()
- def _init_params(self, params):
-  if params:
-   if 'gameover_fixcross_size' in params:
-    self.gameover_fixcross_size = params['gameover_fixcross_size']
-   if 'gameover_fixcross_width' in params:
-    self.gameover_fixcross_width = params['gameover_fixcross_width']
-   if 'gameover_fixcross_frames' in params:
-    self.gameover_fixcross_frames = params['gameover_fixcross_frames']
-   if 'gameover_fixcross_tolerance' in params:
-    self.gameover_fixcross_tolerance = params['gameover_fixcross_tolerance']  
-   if 'gameover_fixcross_frames_tolerance' in params:
-    self.gameover_fixcross_frames_tolerance = params['gameover_fixcross_frames_tolerance']
-   if 'gameover_fixcross_color' in params:
-    self.gameover_fixcross_color = params['gameover_fixcross_color'] 
-   if 'gameover_fixcross_timeout' in params:
-    self.gameover_fixcross_timeout = params['gameover_fixcross_timeout']         
-	  else:
-    self.gameover_fixcross_size = 15
-    self.gameover_fixcross_width = 3
-    self.gameover_fixcross_frames = 30
-    self.gameover_fixcross_tolerance = 50
-    self.gameover_fixcross_frames_tolerance = 2
-    self.gameover_fixcross_color = (0,115,10)
-    self.gameover_fixcross_timeout = 600 
+ 	def _init_params(self, params):
+  		if params:
+   			if 'gameover_fixcross_size' in params:
+    				self.gameover_fixcross_size = params['gameover_fixcross_size']
+   			if 'gameover_fixcross_width' in params:
+    				self.gameover_fixcross_width = params['gameover_fixcross_width']
+   			if 'gameover_fixcross_frames' in params:
+    				self.gameover_fixcross_frames = params['gameover_fixcross_frames']
+   			if 'gameover_fixcross_tolerance' in params:
+    				self.gameover_fixcross_tolerance = params['gameover_fixcross_tolerance']  
+   			if 'gameover_fixcross_frames_tolerance' in params:
+    				self.gameover_fixcross_frames_tolerance = params['gameover_fixcross_frames_tolerance']
+   			if 'gameover_fixcross_color' in params:
+    				self.gameover_fixcross_color = params['gameover_fixcross_color'] 
+   			if 'gameover_fixcross_timeout' in params:
+    				self.gameover_fixcross_timeout = params['gameover_fixcross_timeout']         
+	  	else:
+    			self.gameover_fixcross_size = 15
+    			self.gameover_fixcross_width = 3
+    			self.gameover_fixcross_frames = 30
+    			self.gameover_fixcross_tolerance = 50
+    			self.gameover_fixcross_frames_tolerance = 2
+    			self.gameover_fixcross_color = (0,115,10)
+    			self.gameover_fixcross_timeout = 600 
 	       
 	
 	
@@ -69,8 +69,8 @@ class Validator(object):
 			self.exist = False
 
 	def _reset(self):
-	 self.gameover_fixcross_frames_count = 0
-	 self.gameover_fixcross_frames_miss = 0
+	 	self.gameover_fixcross_frames_count = 0
+	 	self.gameover_fixcross_frames_miss = 0
 		self.validationResults = []
 		self.log = "INCOMPLETE"
 		self.state = 0
@@ -82,54 +82,54 @@ class Validator(object):
 # 		self.worldsurf.blit(t, tr)
 
 	def _display(self):
-	 if self.exist == True:
-	  self.worldsurf.fill((255, 255, 255))
+	 	if self.exist == True:
+	  		self.worldsurf.fill((255, 255, 255))
 		if self.state == 0:
-   fixcross_color = self.gameover_fixcross_color if self.gameover_fixcross_frames_count > 0 and self.gameover_fixcross_frames_miss == 0 else self.border_color
+   			fixcross_color = self.gameover_fixcross_color if self.gameover_fixcross_frames_count > 0 and self.gameover_fixcross_frames_miss == 0 else self.border_color
 
-   pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x - self.gameover_fixcross_size, self.center_y), (self.center_x + self.gameover_fixcross_size, self.center_y), self.gameover_fixcross_width)
-   pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x, self.center_y - self.gameover_fixcross_size), (self.center_x, self.center_y + self.gameover_fixcross_size), self.gameover_fixcross_width)
+   			pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x - self.gameover_fixcross_size, self.center_y), (self.center_x + self.gameover_fixcross_size, self.center_y), self.gameover_fixcross_width)
+   			pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x, self.center_y - self.gameover_fixcross_size), (self.center_x, self.center_y + self.gameover_fixcross_size), self.gameover_fixcross_width)
    
 
 # 			if not self.currentPoint < 0:
 # 				pygame.draw.circle(self.worldsurf, (255, 255, 0), self.calibrationPoints[self.currentPoint], 8)
 # 				pygame.draw.circle(self.worldsurf, (0, 0, 0), self.calibrationPoints[self.currentPoint], 2)
 		if self.state > 0:
-# 			f = pygame.font.Font(None, 28)
+ 			f = pygame.font.Font(None, 28)
    
-			if not self.calibrationResults:
-				self._draw_text('Calculating calibration accuracy %s' % self.spinner[self.spinnerIndex], f, (255, 255, 255), (self.center_x, self.center_y))
+			if not self.validationResults:
+				self._draw_text('Calculating validation accuracy %s' , f, (255, 255, 255), (self.center_x, self.center_y))
 			else:
-				self._draw_text(' '.join(self.calibrationResults[0]), f, (255, 255, 255), (self.center_x, self.center_y))
-				if len(self.calibrationResults) > 1:
-					self._draw_text(' '.join(self.calibrationResults[1]), f, (255, 255, 255), (self.center_x, self.center_y + 30))
-				self._draw_text("Press 'R' to recalibrate, press 'Space Bar' to continue...", f, (255, 255, 255), (self.center_x, self.height - 60))
+				self._draw_text(' '.join(self.validationResults[0]), f, (255, 255, 255), (self.center_x, self.center_y))
+				if len(self.validationResults) > 1:
+					self._draw_text(' '.join(self.validationResults[1]), f, (255, 255, 255), (self.center_x, self.center_y + 30))
+				self._draw_text("Press 'R' to revalidate, press 'Space Bar' to continue...", f, (255, 255, 255), (self.center_x, self.height - 60))
 		self.screen.blit(self.worldsurf, self.worldsurf_rect)
 		pygame.display.flip()
 
 
 
- def _hit(self):
-  if check_hit(self.gaze):
-   self.gameover_fixcross_frames_count += 1
-	  self.gameover_fixcross_frames_miss = 0
-	 else
-	  self.gameover_fixcross_frames_miss += 1
-	 if self.gameover_fixcross_frames_miss >= self.gameover_fixcross_frames_tolerance:
-	  self.gameover_fixcross_frames_count = 0 
-	  if self.gameover_fixcross_frames_miss >= self.gameover_fixcross_timeout:
-	   self.state = 1
-		  self.client.cancelCalibration()
-		  self.log = "TIMEOUT"
-	 if self.gameover_fixcross_frames_count >= self.gameover_fixcross_frames:
-		 self.gameover_fixation = True
-		 self.state = 1
-		 self.client.acceptCalibrationPoint()
-		 self.log = "COMPLETE"
+ 	def _hit(self):
+  		if check_hit(self.gaze):
+   			self.gameover_fixcross_frames_count += 1
+			self.gameover_fixcross_frames_miss = 0
+	 	else:
+	  		self.gameover_fixcross_frames_miss += 1
+	 	if self.gameover_fixcross_frames_miss >= self.gameover_fixcross_frames_tolerance:
+	  		self.gameover_fixcross_frames_count = 0 
+	  		if self.gameover_fixcross_frames_miss >= self.gameover_fixcross_timeout:
+	   			self.state = 1
+		  		self.client.cancelCalibration()
+		  		self.log = "TIMEOUT"
+	 	if self.gameover_fixcross_frames_count >= self.gameover_fixcross_frames:
+			self.gameover_fixation = True
+		 	self.state = 1
+		 	self.client.acceptCalibrationPoint()
+		 	self.log = "COMPLETE"
    
 
- def check_hit(self, gaze):
-  ((gaze[0]-self.center_x)**2 + (gaze[1]-self.center_y)**2) <= ((self.gameover_fixcross_size+self.gameover_fixcross_tolerance)**2
+ 	def check_hit(self, gaze):
+  		((gaze[0]-self.center_x)**2 + (gaze[1]-self.center_y)**2) <= ((self.gameover_fixcross_size+self.gameover_fixcross_tolerance)**2
   
   
   
@@ -159,7 +159,7 @@ class Validator(object):
 	def start(self, stopCallback, wait=1, randomize=1, auto=0, speed=1, level=3, points=9, *args, **kwargs):
 # 		self.client.setDataFormat('%TS %ET %SX %SY %DX %DY %EX %EY %EZ')
 		if self.exist == False:
-		 self.client.startDataStreaming()
+		 	self.client.startDataStreaming()
 		
 		self.client.validateCalibrationAccuracyExtended(self.center_x, self.center_y)
 		self.lc = LoopingCall(self._update)
