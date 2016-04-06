@@ -98,7 +98,7 @@ class Validator(object):
             r.height = int((30 * self.sheight) / 100)
             r.center = (self.center_x, self.center_y)
             pygame.draw.rect(self.worldsurf, self.bg_color, r, 0)
-        if self.state == 0:
+        if self.state < 2:
                fixcross_color = self.hit_color if self.frames_count > 0 and self.frames_miss == 0 else self.miss_color
 
                pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x - self.size, self.center_y), (self.center_x + self.size, self.center_y), self.width)
@@ -139,6 +139,11 @@ class Validator(object):
     def _update(self):
         self._display()
         self._hit()
+        if self.state == 2:
+            self.complete = True
+            self.lc.stop()
+            return
+
 
 
         for event in pygame.event.get():
@@ -155,17 +160,7 @@ class Validator(object):
                     self.lc.stop()
                     return
 
-#                 if self.state == 1:
-#                     if event.key == pygame.K_SPACE:
-#                         self.client.acceptCalibrationPoint()
-#                 elif self.state == 2:
-#                     if event.key == pygame.K_r:
-#                         self._reset()
-#       self.client.validateCalibrationAccuracyExtended(self.center_x, self.center_y)_
-# #                         self.client.startCalibration(9, self.eye)
-#                     elif event.key == pygame.K_SPACE:
-#                         self.complete = True
-#                         self.lc.stop()
+
     def check_hit(self, gaze):
         return ((int(gaze[0])-self.center_x)**2 + (int(gaze[1])-self.center_y)**2) <= ((self.size+self.tolerance)**2)
 
@@ -194,39 +189,9 @@ class Validator(object):
         self.gaze = map(float, [inResponse[2], inResponse[4]])
         self.eye_position = map(float, inResponse[10:])
 
-#     @d.listen('ET_CAL')
-#     def iViewXEvent(self, inResponse):
-#         self.calibrationPoints = [None] * int(inResponse[0])
-#
-#     @d.listen('ET_CSZ')
-#     def iViewXEvent(self, inResponse):
-#         pass
-#
-#     @d.listen('ET_PNT')
-#     def iViewXEvent(self, inResponse):
-#         self.calibrationPoints[int(inResponse[0]) - 1] = (int(inResponse[1]), int(inResponse[2]))
-#
-#     @d.listen('ET_CHG')
-#     def iViewXEvent(self, inResponse):
-#         self.currentPoint = int(inResponse[0]) - 1
-
     @d.listen('ET_VLX')
     def iViewXEvent(self, inResponse):
         if inResponse != []:
             self.state = 2
             # print inResponse
             self.validationResults.append(inResponse)
-            self.complete = True
-            self.lc.stop()
-            return
-
-#
-#     @d.listen('ET_CSP')
-#     def iViewXEvent(self, inResponse):
-#         pass
-#
-#     @d.listen('ET_FIN')
-#     def iViewXEvent(self, inResponse):
-#         self.state = 1
-#         self.client.requestCalibrationResults()
-#         self.client.validateCalibrationAccuracy()
