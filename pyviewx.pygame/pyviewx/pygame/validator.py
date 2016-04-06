@@ -1,3 +1,15 @@
+##########
+# TO-DO
+##########
+# set parameter tolerance to initiate auto re-calibrate
+# implement auto re-calibrate
+# test if new changes fix looping call issue
+# figure out how to implement without the cancelCalibration call.
+#       - test ET_VLS by seeing what is returned, and figure out what is required
+
+
+
+
 from __future__ import division
 from pyviewx.client import Dispatcher
 from twisted.internet.task import LoopingCall
