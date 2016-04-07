@@ -1,17 +1,15 @@
 ##########
 # TO-DO
 ##########
-# set parameter tolerance to initiate auto re-calibrate
-# implement auto re-calibrate
-# test if new changes fix looping call issue
-# figure out how to implement without the cancelCalibration call.
-#       - test ET_VLS by seeing what is returned, and figure out what is required
+# set parameter tolerance to initiate auto re-calibrate -- currently set at 0.8
+# should make it a variable you can change
 
 
 
 
 from __future__ import division
 from pyviewx.client import Dispatcher
+from pyviewx.pygame import Calibrator
 from twisted.internet.task import LoopingCall
 import pygame
 
@@ -21,7 +19,7 @@ class Validator(object):
 
     d = Dispatcher()
 
-    def __init__(self, client, screen=None, worldsurf=None, escape=False, reactor=None, params=None, eye=0):
+    def __init__(self, client, screen=None, escape=False, reactor=None, params=None, eye=0):
         if reactor is None:
             from twisted.internet import reactor
 
@@ -35,10 +33,7 @@ class Validator(object):
         self.swidth, self.sheight = self.screen.get_size()
         self.center_x = int(self.swidth / 2)
         self.center_y = int(self.sheight / 2)
-        if worldsurf:
-            self.worldsurf = worldsurf
-        else:
-            self.worldsurf = self.screen.copy()
+        self.worldsurf = self.screen.copy()
         self.worldsurf_rect = self.worldsurf.get_rect()
 
 
@@ -96,14 +91,20 @@ class Validator(object):
         self.frames_miss = 0
         self.validationResults = []
         self.gaze = []
-        self.log = "INCOMPLETE"
+        self.log = ["INCOMPLETE"]
+        self.recalibrate = False
 
         self.state = 0
 
+    def _draw_text(self, text, font, color, loc):
+		t = font.render(text, True, color)
+		tr = t.get_rect()
+		tr.center = loc
+		self.worldsurf.blit(t, tr)
 
     def _display(self):
         if self.exist == False:
-              self.worldsurf.fill((0, 0, 0))
+              self.worldsurf.fill(self.bg_color)
         else:
             r = pygame.Rect(0, 0, 0, 0)
             r.width = int((20 * self.swidth) / 100)
@@ -115,10 +116,18 @@ class Validator(object):
 
                pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x - self.size, self.center_y), (self.center_x + self.size, self.center_y), self.width)
                pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x, self.center_y - self.size), (self.center_x, self.center_y + self.size), self.width)
-
+        if self.state == 2:
+            if float(self.validationResults[0][2].split('\xb0')[0]) > .8 or float(self.validationResults[0][3].split('\xb0')[0]) > .8:
+                self.worldsurf.fill(self.bg_color)
+                f = pygame.font.Font(None, 28)
+                self._draw_text("Poor Validation Detected", f, (255, 255, 255), (self.center_x, self.center_y - 30))
+                self._draw_text("X : %s || Y: %s" % (self.validationResults[0][2], self.validationResults[0][3]),f,(255,255,255), (self.center_x, self.center_y))
+                self._draw_text("Press 'Space' to Begin New Calibration, Press 'T' to Skip... ", f, (255, 255, 255), (self.center_x, self.center_y + 30))
+            else:
+                self.state = 3
 
         self.screen.blit(self.worldsurf, self.worldsurf_rect)
-        # pygame.display.flip()
+        pygame.display.flip()
 
 
 
@@ -133,17 +142,15 @@ class Validator(object):
             self.frames_count = 0
             if self.frames_miss >= self.timeout:
                 self.state = 1
-                self.client.cancelCalibration()
-                self.log = "TIMEOUT"
-                self.complete = True
-                self.lc.stop()
-                return
+                self.client.acceptCalibrationPoint()
+                self.log = ["TIMEOUT"]
+
 
         if self.frames_count >= self.frames:
             self.gameover_fixation = True
             self.state = 1
             self.client.acceptCalibrationPoint()
-            self.log = "COMPLETE"
+            self.log = ["COMPLETE"]
 
 
 
@@ -152,8 +159,7 @@ class Validator(object):
         self._display()
         if self.state == 0:
             self._hit()
-        if self.state == 2:
-            if self.validationResults[]
+        if self.state == 3:
             self.complete = True
             self.lc.stop()
             return
@@ -164,14 +170,29 @@ class Validator(object):
             if event.type == pygame.KEYDOWN:
                 if self.escape and event.key == pygame.K_ESCAPE:
                     if self.lc:
-                        self.log = "OVERRIDE"
+                        self.log = ["OVERRIDE"]
                         self.lc.stop()
                         return
                 if event.key == pygame.K_t:
-                    self.gameover_fixation = True
-                    self.state = 1
-                    self.client.acceptCalibrationPoint()
-                    self.log = "OVERRIDE"
+                    if self.state < 2:
+                        self.gameover_fixation = True
+                        self.state = 1
+                        self.client.acceptCalibrationPoint()
+                        self.log = ["OVERRIDE"]
+                    if self.state > 1:
+                        self.log = ["OVERRIDE_RECALIBRATE"]
+                        self.complete = True
+                        self.lc.stop()
+                        return
+                if event.key == pygame.K_SPACE:
+                    if self.state == 2:
+                        self.log.append("RECALIBRATE")
+                        self.complete = True
+                        self.lc.stop()
+                        return
+
+
+
 
 
 
@@ -183,8 +204,6 @@ class Validator(object):
 #         self.client.setDataFormat('%TS %ET %SX %SY %DX %DY %EX %EY %EZ')
         if self.exist == False:
             self.client.startDataStreaming()
-        else:
-            self.client.cancelCalibration()
         self.client.validateCalibrationAccuracyExtended(self.center_x, self.center_y)
         self.lc = LoopingCall(self._update)
         dd = self.lc.start(1.0 / 30)
