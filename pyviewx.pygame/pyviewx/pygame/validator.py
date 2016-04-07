@@ -51,7 +51,7 @@ class Validator(object):
           self.size = 15
           self.width = 3
           self.frames = 60
-          self.tolerance = 50
+          self.tolerance = 100
           self.frames_tolerance = 2
           self.hit_color = (0,115,10)
           self.timeout = 600
@@ -150,8 +150,10 @@ class Validator(object):
 
     def _update(self):
         self._display()
-        self._hit()
+        if self.state == 0:
+            self._hit()
         if self.state == 2:
+            if self.validationResults[]
             self.complete = True
             self.lc.stop()
             return
@@ -166,11 +168,11 @@ class Validator(object):
                         self.lc.stop()
                         return
                 if event.key == pygame.K_t:
+                    self.gameover_fixation = True
+                    self.state = 1
                     self.client.acceptCalibrationPoint()
                     self.log = "OVERRIDE"
-                    self.complete = True
-                    self.lc.stop()
-                    return
+
 
 
     def check_hit(self, gaze):
