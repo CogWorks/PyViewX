@@ -27,7 +27,7 @@ class Calibrator(object):
 
 	d = Dispatcher()
 
-	def __init__(self, client, screen=None, escape=False, reactor=None, eye=0):
+	def __init__(self, client, screen=None, escape=True, reactor=None, eye=0):
 		if reactor is None:
 			from twisted.internet import reactor
 		self.eye = eye
@@ -61,7 +61,15 @@ class Calibrator(object):
 
 	def _reset(self):
 		self.eye_position = ()
+		self.curCalibrationResults = []
 		self.calibrationResults = []
+		self.calibrationPoints = []
+		self.currentPoint = -1
+		self.state = 0
+
+	def _valid_reset(self):
+		self.eye_position = ()
+		self.curCalibrationResults = []
 		self.calibrationPoints = []
 		self.currentPoint = -1
 		self.state = 0
@@ -97,13 +105,13 @@ class Calibrator(object):
 				pygame.draw.circle(self.worldsurf, (0, 0, 0), self.calibrationPoints[self.currentPoint], 2)
 		if self.state > 0:
 			f = pygame.font.Font(None, 28)
-			if not self.calibrationResults:
+			if not self.curCalibrationResults:
 				self._draw_text('Calculating calibration accuracy %s' % self.spinner[self.spinnerIndex], f, (255, 255, 255), (self.center_x, self.center_y))
 			else:
 				self._draw_text(' '.join(self.calibrationResults[0]), f, (255, 255, 255), (self.center_x, self.center_y))
-				if len(self.calibrationResults) > 1:
-					self._draw_text(' '.join(self.calibrationResults[1]), f, (255, 255, 255), (self.center_x, self.center_y + 30))
-				self._draw_text("Press 'R' to recalibrate, press 'Space Bar' to continue...", f, (255, 255, 255), (self.center_x, self.height - 60))
+				if len(self.curCalibrationResults) > 1:
+					self._draw_text(' '.join(self.curCalibrationResults[1]), f, (255, 255, 255), (self.center_x, self.center_y + 30))
+				self._draw_text("Press 'R' to recalibrate, press 'Space Bar' to continue, press 'V' to validate...", f, (255, 255, 255), (self.center_x, self.height - 60))
 		self.screen.blit(self.worldsurf, self.worldsurf_rect)
 		pygame.display.flip()
 
@@ -121,15 +129,22 @@ class Calibrator(object):
 				if self.state == 0:
 					if event.key == pygame.K_SPACE:
 						self.client.acceptCalibrationPoint()
+				if self.state == 1:
+					if event.key == pygame.K_SPACE:
+						self.client.acceptCalibrationPoint()
 				elif self.state == 2:
 					if event.key == pygame.K_r:
 						self._reset()
-						self.client.startCalibration(9, self.eye)
+						self.client.startCalibration(self.points, self.eye)
 					elif event.key == pygame.K_SPACE:
 						self.complete = True
 						self.lc.stop()
+					elif event.key == pygame.K_v:
+						self._valid_reset()
+						self.client.validateCalibrationAccuracy()
 
 	def start(self, stopCallback, wait=1, randomize=1, auto=0, speed=1, level=3, points=9, *args, **kwargs):
+		self.points = points
 		self.client.setDataFormat('%TS %ET %SX %SY %DX %DY %EX %EY %EZ')
 		self.client.startDataStreaming()
 		self.client.setSizeCalibrationArea(self.width, self.height)
@@ -138,7 +153,8 @@ class Calibrator(object):
 		self.client.setCalibrationParam(2, auto)
 		self.client.setCalibrationParam(3, speed)
 		self.client.setCalibrationCheckLevel(level)
-		self.client.startCalibration(points, self.eye)
+		self.client.startCalibration(self.points, self.eye)
+
 		self.lc = LoopingCall(self._update)
 		dd = self.lc.start(1.0 / 30)
 		if not stopCallback:
@@ -174,6 +190,7 @@ class Calibrator(object):
 	def iViewXEvent(self, inResponse):
 		self.state = 2
 		self.calibrationResults.append(inResponse)
+		self.curCalibrationResults.append(inResponse)
 
 	@d.listen('ET_CSP')
 	def iViewXEvent(self, inResponse):
@@ -183,4 +200,3 @@ class Calibrator(object):
 	def iViewXEvent(self, inResponse):
 		self.state = 1
 		self.client.requestCalibrationResults()
-		self.client.validateCalibrationAccuracy()
