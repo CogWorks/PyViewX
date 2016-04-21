@@ -139,21 +139,25 @@ class Calibrator(object):
 					elif event.key == pygame.K_SPACE:
 						self.complete = True
 						self.lc.stop()
+						##self.client.removeDispatcher(self.d)
 					elif event.key == pygame.K_v:
 						self._valid_reset()
 						self.client.validateCalibrationAccuracy()
 
-	def start(self, stopCallback, wait=1, randomize=1, auto=0, speed=1, level=3, points=9, *args, **kwargs):
+	def start(self, stopCallback, wait=1, randomize=1, auto=0, speed=1, level=3, points=9, recalibrate=False, *args, **kwargs):
 		self.points = points
 		self.client.setDataFormat('%TS %ET %SX %SY %DX %DY %EX %EY %EZ')
-		self.client.startDataStreaming()
-		self.client.setSizeCalibrationArea(self.width, self.height)
-		self.client.setCalibrationParam(0, wait)
-		self.client.setCalibrationParam(1, randomize)
-		self.client.setCalibrationParam(2, auto)
-		self.client.setCalibrationParam(3, speed)
-		self.client.setCalibrationCheckLevel(level)
+		if recalibrate == False:
+			self.client.startDataStreaming()
+			self.client.setSizeCalibrationArea(self.width, self.height)
+			self.client.setCalibrationParam(0, wait)
+			self.client.setCalibrationParam(1, randomize)
+			self.client.setCalibrationParam(2, auto)
+			self.client.setCalibrationParam(3, speed)
+			self.client.setCalibrationCheckLevel(level)
+
 		self.client.startCalibration(self.points, self.eye)
+
 
 		self.lc = LoopingCall(self._update)
 		dd = self.lc.start(1.0 / 30)
