@@ -38,7 +38,7 @@ class Validator(object):
         self.center_y = int(self.sheight / 2)
         self.worldsurf = self.screen.copy()
         self.worldsurf_rect = self.worldsurf.get_rect()
-
+        self.resets = 0
 
         pygame.mouse.set_visible(False)
 
@@ -56,6 +56,7 @@ class Validator(object):
           self.miss_color = (255,255,255)
           self.bg_color = (0,0,0)
           self.val_accuracy = 0.8
+          self.automated = True
           if params:
                if 'miss_color' in params:
                     self.miss_color = params['miss_color']
@@ -77,6 +78,8 @@ class Validator(object):
                     self.timeout = params['timeout']
                if 'val_accuracy' in params:
                     self.val_accuracy = params['val_accuracy']
+               if 'automated' in params:
+               	    self.automated = params['automated']
 
 
 
@@ -129,12 +132,23 @@ class Validator(object):
                pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x - self.size, self.center_y), (self.center_x + self.size, self.center_y), self.width)
                pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x, self.center_y - self.size), (self.center_x, self.center_y + self.size), self.width)
         if self.state == 2:
-            if float(self.validationResults[-1][2].split('\xb0')[0]) > self.val_accuracy or float(self.validationResults[-1][3].split('\xb0')[0]) > self.val_accuracy:
+       	    if self.resets = 1:
+       	    	self.state = 3
+            if float(self.validationResults[-1][2].split('\xb0')[0]) > self.val_accuracy or float(self.validationResults[-1][3].split('\xb0')[0]) > self.val_accuracy
                 self.worldsurf.fill(self.bg_color)
                 f = pygame.font.Font(None, 28)
-                self._draw_text("Poor Validation Detected", f, (255, 255, 255), (self.center_x, self.center_y - 30))
-                self._draw_text("X : %s || Y: %s" % (self.validationResults[-1][2], self.validationResults[-1][3]),f,(255,255,255), (self.center_x, self.center_y))
-                self._draw_text("Press 'Space' to Begin New Calibration, Press 'R' to Retry, Press 'T' to Skip... ", f, (255, 255, 255), (self.center_x, self.center_y + 30))
+                if self.automated:
+                	offset = 100
+                	offset2 = 80
+                	self._draw_text("Please sit up straight and put your head in the headrest.", f, (255, 255, 255), (self.center_x, self.center_y - 40))
+                	self._draw_text("Try to return to the posture you were originally calibrated with.", f, (255, 255, 255), (self.center_x, self.center_y - 10))
+			self._draw_text("Press 'Space' to begin second attempt... ", f, (255, 255, 255), (self.center_x, self.center_y + 30))
+                else:
+                	offset = 30
+                	offset2 = 0 
+                	self._draw_text("Press 'Space' to Begin New Calibration, Press 'R' to Retry, Press 'T' to Skip... ", f, (255, 255, 255), (self.center_x, self.center_y + 30))
+                self._draw_text("Poor Validation Detected", f, (255, 255, 255), (self.center_x, self.center_y - offset))
+                self._draw_text("X : %s || Y: %s" % (self.validationResults[-1][2], self.validationResults[-1][3]),f,(255,255,255), (self.center_x, self.center_y - offset2))
             else:
                 self.state = 3
 
@@ -205,10 +219,15 @@ class Validator(object):
                         return
                 if event.key == pygame.K_SPACE:
                     if self.state == 2:
-                        self.log.append("RECALIBRATE")
-                        self.complete = True
-                        self.lc.stop()
-                        return
+                    	if self.automated: 
+                    		self._reset(reset = True)
+                    		self.resets += 1
+                    		self.client.validateCalibrationAccuracyExtended(self.center_x, self.center_y)
+                        else: 
+                		self.log.append("RECALIBRATE")
+                        	self.complete = True
+                        	self.lc.stop()
+                        	return
                 if event.key == pygame.K_r:
                     self._reset(reset = True)
                     self.client.validateCalibrationAccuracyExtended(self.center_x, self.center_y)
