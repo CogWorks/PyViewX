@@ -132,17 +132,17 @@ class Validator(object):
                pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x - self.size, self.center_y), (self.center_x + self.size, self.center_y), self.width)
                pygame.draw.line(self.worldsurf, fixcross_color, (self.center_x, self.center_y - self.size), (self.center_x, self.center_y + self.size), self.width)
         if self.state == 2:
-       	    if self.resets = 1:
+       	    if self.resets == 1:
        	    	self.state = 3
-            if float(self.validationResults[-1][2].split('\xb0')[0]) > self.val_accuracy or float(self.validationResults[-1][3].split('\xb0')[0]) > self.val_accuracy
+            if float(self.validationResults[-1][2].split('\xb0')[0]) > self.val_accuracy or float(self.validationResults[-1][3].split('\xb0')[0]) > self.val_accuracy:
                 self.worldsurf.fill(self.bg_color)
                 f = pygame.font.Font(None, 28)
                 if self.automated:
-                	offset = 100
-                	offset2 = 80
-                	self._draw_text("Please sit up straight and put your head in the headrest.", f, (255, 255, 255), (self.center_x, self.center_y - 40))
-                	self._draw_text("Try to return to the posture you were originally calibrated with.", f, (255, 255, 255), (self.center_x, self.center_y - 10))
-			self._draw_text("Press 'Space' to begin second attempt... ", f, (255, 255, 255), (self.center_x, self.center_y + 30))
+                	offset = 150
+                	offset2 = 110
+                	self._draw_text("Please sit up straight and put your head in the headrest.", f, (255, 255, 255), (self.center_x, self.center_y - 50))
+                	self._draw_text("Try to return to the posture you were originally calibrated with.", f, (255, 255, 255), (self.center_x, self.center_y - 0))
+			self._draw_text("Press 'Space' to begin second attempt... ", f, (255, 255, 255), (self.center_x, self.center_y + 50))
                 else:
                 	offset = 30
                 	offset2 = 0 
